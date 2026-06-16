@@ -41,18 +41,18 @@ st.subheader("🔍 Apollo.io Lead-Suche")
 
 def search_apollo():
     try:
-        # Sicherer Zugriff auf das Secret
         api_key = st.secrets["APOLLO_API_KEY"]
         
+        # WICHTIG: API-Key muss in den Header, nicht in das payload-JSON
         url = "https://api.apollo.io/v1/mixed_people/search"
         headers = {
             "Content-Type": "application/json",
-            "Cache-Control": "no-cache"
+            "Cache-Control": "no-cache",
+            "X-Api-Key": api_key  # Hier liegt jetzt die Sicherheit
         }
         
-        # Minimale, saubere Payload, um 422 Fehler zu vermeiden
+        # Payload ohne api_key, da dieser nun im Header sitzt
         payload = {
-            "api_key": api_key,
             "q_organization_num_employees_ranges": ["11-50"],
             "person_titles": ["Geschäftsführer"],
             "page": 1,
@@ -64,7 +64,7 @@ def search_apollo():
         if response.status_code == 200:
             return response.json().get("people", [])
         else:
-            st.error(f"Fehler {response.status_code}: {response.text}")
+            st.error(f"Apollo API Fehler ({response.status_code}): {response.text}")
             return None
     except Exception as e:
         st.error(f"Fehler: {str(e)}")
@@ -75,7 +75,7 @@ if st.button("Leads von Apollo laden"):
         leads = search_apollo()
         if leads:
             df = pd.DataFrame(leads)
-            # Spalten auswählen, die sicher vorhanden sind
+            # Spalten auswählen
             display_cols = ['name', 'title', 'organization_name']
             st.dataframe(df[[c for c in display_cols if c in df.columns]])
         else:
