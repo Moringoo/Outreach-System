@@ -9,7 +9,6 @@ st.title("🔍 LeadFinder Pro")
 
 # --- Bereich: KI-Outreach-Assistent ---
 st.subheader("🚀 KI-Outreach-Assistent")
-
 company_name = st.text_input("Name des Unternehmens:")
 
 def generate_tavario_pitch(name):
@@ -31,7 +30,7 @@ Martina Ohrdorf
 
 if st.button("✨ Pitch für Tavario-Partnerschaft generieren"):
     if company_name:
-        st.text_area("Dein Pitch:", value=generate_tavario_pitch(company_name), height=350)
+        st.text_area("Dein Pitch (zur Bearbeitung und zum Kopieren):", value=generate_tavario_pitch(company_name), height=350)
     else:
         st.warning("Bitte gib einen Firmennamen ein.")
 
@@ -45,16 +44,17 @@ def search_apollo():
         api_key = st.secrets["APOLLO_API_KEY"]
         url = "https://api.apollo.io/v1/mixed_people/search"
         headers = {"Content-Type": "application/json"}
+        # Vereinfachte Payload zur Vermeidung von 422-Fehlern
         payload = {
             "api_key": api_key,
-            "person_titles": ["Geschäftsführer"],
+            "page": 1,
             "per_page": 5
         }
         response = requests.post(url, json=payload, headers=headers)
         if response.status_code == 200:
             return response.json().get("people", [])
         else:
-            st.error(f"Fehler bei Apollo: {response.status_code}")
+            st.error(f"Apollo Fehler: {response.status_code}")
             return None
     except Exception as e:
         st.error(f"Fehler: {e}")
@@ -68,4 +68,4 @@ if st.button("Leads von Apollo laden"):
             st.write("Gefundene Leads:")
             st.dataframe(df)
         else:
-            st.warning("Keine Leads gefunden oder Fehler bei der Verbindung.")
+            st.warning("Suche fehlgeschlagen. Überprüfe deinen API-Key in den Secrets.")
