@@ -1,27 +1,36 @@
 import streamlit as st
 import pandas as pd
-from supabase import create_client
 
-# Seiteneinstellungen
+# Konfiguration
 st.set_page_config(page_title="LeadFinder Pro", layout="wide")
 
-st.title("🚀 LeadFinder Pro - Outreach System")
+# Styling: Layout an das Bild anpassen
+st.title("🔍 LeadFinder Pro")
 
-# Platzhalter für die Datenbank-Verbindung
-# Hier werden später deine echten Supabase-Daten eingetragen
-st.sidebar.header("⚙️ Suchkriterien")
-company_name = st.sidebar.text_input("Firmenname", value="Tavario")
+# Metrik-Karten (Reihe 1)
+col1, col2, col3, col4 = st.columns(4)
+with col1:
+    st.metric("Total Leads", "0")
+with col2:
+    st.metric("New", "0")
+with col3:
+    st.metric("Contacted", "0")
+with col4:
+    st.metric("Qualified", "0")
 
-# Anzeige von Test-Daten
-st.subheader("Gefundene Leads")
-data = {
-    "Name": ["Max Mustermann", "Erika Musterfrau"],
-    "Unternehmen": ["Musterbau GmbH", "Pflegezentrum Nord"],
-    "Status": ["Neu", "Kontaktiert"]
-}
-df = pd.DataFrame(data)
+st.markdown("---")
 
-edited_df = st.data_editor(df, use_container_width=True)
+# Leads Bereich
+header_col1, header_col2 = st.columns([3, 1])
+with header_col1:
+    st.subheader("Leads")
+with header_col2:
+    if st.button("🔍 Search Apollo.io", type="primary"):
+        st.warning("Suche wird gestartet...")
 
-if st.button("📋 Nachricht kopieren"):
-    st.success("Nachricht für den gewählten Lead kopiert!")
+# Platzhalter-Bereich wenn keine Daten da sind
+st.info("No leads found. Configure your search criteria and click Search to find new leads.")
+
+# Hier würde später die Tabelle erscheinen
+# df = pd.DataFrame(...)
+# st.dataframe(df, use_container_width=True)
