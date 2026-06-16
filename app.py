@@ -1,4 +1,5 @@
 import streamlit as st
+import requests
 import pandas as pd
 
 # Konfiguration
@@ -6,19 +7,8 @@ st.set_page_config(page_title="LeadFinder Pro - Tavario", layout="wide")
 
 st.title("🔍 LeadFinder Pro")
 
-# Metrik-Karten
-col1, col2, col3, col4 = st.columns(4)
-col1.metric("Total Leads", "0")
-col2.metric("New", "0")
-col3.metric("Contacted", "0")
-col4.metric("Qualified", "0")
-
-st.markdown("---")
-
-# Bereich: KI-Outreach-Assistent
+# --- Bereich: KI-Outreach-Assistent ---
 st.subheader("🚀 KI-Outreach-Assistent")
-st.info("Generiere hier deinen Tavario-Pitch für einen Lead. Kopiere ihn danach manuell zu LinkedIn.")
-
 company_name = st.text_input("Name des Unternehmens:")
 
 def generate_tavario_pitch(name):
@@ -38,16 +28,40 @@ Beste Grüße,
 Martina Ohrdorf
 """
 
-if st.button("✨ Pitch für Tavario-Partnerschaft generieren"):
+if st.button("✨ Pitch generieren"):
     if company_name:
-        text = generate_tavario_pitch(company_name)
-        st.text_area("Dein Pitch (zur Bearbeitung und zum Kopieren):", value=text, height=350)
+        st.text_area("Dein Pitch:", value=generate_tavario_pitch(company_name), height=300)
     else:
         st.warning("Bitte gib einen Firmennamen ein.")
 
 st.markdown("---")
 
-# Bereich: Lead-Tabelle
-st.subheader("Leads")
-st.button("🔍 Search Apollo.io")
-st.info("No leads found. Configure your search criteria and click Search to find new leads.")
+# --- Bereich: Apollo.io Lead-Suche ---
+st.subheader("🔍 Apollo.io Lead-Suche")
+
+def search_apollo():
+    api_key = st.secrets["APOLLO_API_KEY"]
+    url = "https://api.apollo.io/v1/mixed_people/search"
+    headers = {"Content-Type": "application/json"}
+    # Suche nach Firmen im Bereich Handwerk/Pflege (als Beispiel)
+    payload = {
+        "api_key": api_key,
+        "q_organization_domains": "",
+        "person_titles": ["Geschäftsführer", "Inhaber"],
+        "page": 1,
+        "per_page": 10
+    }
+    response = requests.post(url, json=payload, headers=headers)
+    if response.status_code == 200:
+        return response.json().get("people", [])
+    else:
+        return None
+
+if st.button("Leads von Apollo laden"):
+    leads = search_apollo()
+    if leads:
+        df = pd.DataFrame(leads)
+        st.write("Gefundene Leads:")
+        st.dataframe(df[['name', 'title', 'organization_name', 'email']])
+    else:
+        st.error("Konnte keine Leads laden. Prüfe deine API-Einstellungen.")
